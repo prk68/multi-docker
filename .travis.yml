@@ -1,0 +1,26 @@
+language: generic
+sudo: required
+services:
+  - docker
+
+
+before_install:
+   - docker build -t prk68/react-test  -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true prk68/react-test npm test
+
+after_success:
+  - docker build -t prk68/multi-client ./client 
+  - docker build -t prk68/multi-nginx ./nginx 
+  - docker build -t prk68/multi-server ./server 
+  - docker build -t prk68/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push prk68/multi-client
+  - docker push prk68/multi-nginx
+  - docker push prk68/multi-server
+  - docker push prk68/multi-worker
+
+
+
+
